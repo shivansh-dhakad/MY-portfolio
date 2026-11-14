@@ -393,5 +393,29 @@
 .badge-status.status-live { color: #4ade80; border-color: rgba(74, 222, 128, .4); }
 .badge-status.status-research { color: #c084fc; border-color: rgba(192, 132, 252, .4); }
 .pw-para { white-space: pre-wrap; margin: 0 0 .8rem; }
+.pw-markdown { max-width: 78ch; color: var(--text-muted); font-size: .95rem; line-height: 1.7; overflow-wrap: anywhere; }
+.pw-markdown > :first-child { margin-top: 0; }
+.pw-markdown > :last-child { margin-bottom: 0; }
+.pw-markdown h1, .pw-markdown h2, .pw-markdown h3, .pw-markdown h4, .pw-markdown h5, .pw-markdown h6 {
+  margin: 1.5em 0 .55em; color: #fff; font-family: var(--font-display); line-height: 1.25;
+}
+.pw-markdown h1 { font-size: 1.6rem; }
+.pw-markdown h2 { font-size: 1.35rem; }
+.pw-markdown h3 { font-size: 1.12rem; }
+.pw-markdown p, .pw-markdown ul, .pw-markdown ol, .pw-markdown blockquote, .pw-markdown table,
+.pw-markdown pre, .pw-markdown hr { margin: 0 0 1rem; }
+.pw-markdown ul, .pw-markdown ol { padding-left: 1.5rem; }
+.pw-markdown li { padding-left: .2rem; }
+.pw-markdown li + li { margin-top: .35rem; }
+.pw-markdown a { color: var(--accent-light); text-decoration: underline; text-underline-offset: .15em; }
+.pw-markdown blockquote { padding: .1rem 0 .1rem 1rem; border-left: 3px solid var(--accent); color: var(--text); }
+.pw-markdown code { padding: .12em .35em; border: 1px solid var(--line); border-radius: 4px; background: var(--ink-1); color: var(--accent-light); font: .88em var(--font-mono); }
+.pw-markdown pre { overflow-x: auto; padding: .85rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: #09090c; }
+.pw-markdown pre code { padding: 0; border: 0; background: none; color: var(--text); }
+.pw-markdown table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; }
+.pw-markdown th, .pw-markdown td { padding: .5rem .7rem; border: 1px solid var(--line); text-align: left; }
+.pw-markdown th { color: #fff; background: var(--ink-1); }
+.pw-markdown hr { border: 0; border-top: 1px solid var(--line); }
+.pw-markdown img { max-width: 100%; height: auto; border-radius: var(--radius); }
 .pw-shots { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-bottom: 1.5rem; }
 .pw-shots img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border: 1px solid var(--line); border-radius: var(--radius); }
