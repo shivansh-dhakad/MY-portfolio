@@ -19,6 +19,5 @@ Sign in at `/admin` and open **Beyond the code** to add, edit, reorder, hide, or
 ## Managing skills
 In `/admin`, open **Skills** to add and reorder domains, then add, edit, remove, or reorder skills within each domain. Use **Save all skills** once to submit all skill changes. Deleting a domain permanently deletes all skills assigned to it.
 
-## Deploy to Vercel
-Import the GitHub repo, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as environment variables, deploy.
-Never add the service-role key anywhere in this project.
+## Deploy 
+Check out my profile - https://portfolio-shivansh-dhakad.netlify.app/
