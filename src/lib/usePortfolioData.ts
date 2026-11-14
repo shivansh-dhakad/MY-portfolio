@@ -3,7 +3,6 @@ import { supabase } from './supabase'
 import {
   PROFILE_DATA,
   EDUCATION_DATA,
-  SKILLS_DATA,
   PROJECTS_DATA,
   BEYOND_CODE_DATA,
   LEARNING_JOURNEY_DATA,
@@ -14,7 +13,7 @@ import {
   type JourneyDestination,
 } from '../data/portfolioData'
 
-export type DataStatus = 'loading' | 'ready' | 'fallback' | 'error'
+export type DataStatus = 'loading' | 'ready' | 'error'
 
 export interface PortfolioState {
   profile: typeof PROFILE_DATA
@@ -36,7 +35,7 @@ export function usePortfolioData(): PortfolioState {
   const [state, setState] = useState<PortfolioState>({
     profile: PROFILE_DATA,
     education: EDUCATION_DATA,
-    skills: SKILLS_DATA,
+    skills: [],
     projects: PROJECTS_DATA,
     journey: LEARNING_JOURNEY_DATA,
     beyondCode: BEYOND_CODE_DATA,
@@ -161,21 +160,15 @@ export function usePortfolioData(): PortfolioState {
           }
         }
 
-        // Live Skills. Categories created in the dashboard become new constellation domains.
-        let liveSkills = SKILLS_DATA
-        if (skillsRes.data && skillsRes.data.length > 0 && catRes.data) {
-          liveSkills = skillsRes.data.map((s) => {
-            const cat = catRes.data.find((c) => c.id === s.category_id)
-            const fallbackSkill = SKILLS_DATA.find((sk) => sk.name.toLowerCase() === s.name.toLowerCase())
-            return {
-              id: s.id,
-              name: s.name,
-              domain: (cat?.name as SkillItem['domain']) || fallbackSkill?.domain || 'Languages & Core',
-              highlight: fallbackSkill?.highlight ?? false,
-              color: fallbackSkill?.color || '', // empty = the domain colour is used
-            }
-          })
-        }
+        const skillsError = skillsRes.error ?? catRes.error
+        const liveSkills: SkillItem[] =
+          skillsError || !skillsRes.data || !catRes.data
+            ? []
+            : skillsRes.data.map((s) => ({
+                id: s.id,
+                name: s.name,
+                domain: catRes.data.find((c) => c.id === s.category_id)?.name ?? 'Uncategorized',
+              }))
 
         // Education: database rows (College / School). Keeps the built-in record if the query fails.
         const liveEdu: EducationItem[] =
@@ -196,11 +189,8 @@ export function usePortfolioData(): PortfolioState {
               : beyondRes.data.map((item): BeyondCodeItem => ({
                   id: item.id,
                   title: item.title,
-                  subtitle: '',
                   category: item.category,
                   description: item.description,
-                  quote: '',
-                  tags: [],
                   placeholderType: item.placeholder_type === 'photo' ? 'photo' : 'audio',
                 }))
 
@@ -211,14 +201,15 @@ export function usePortfolioData(): PortfolioState {
           projects: liveProjects,
           journey: LEARNING_JOURNEY_DATA,
           beyondCode: liveBeyondCode,
-          status: 'ready',
+          status: skillsError ? 'error' : 'ready',
+          errorMessage: skillsError ? `Could not load skills from Supabase: ${skillsError.message}` : undefined,
         })
       } catch (err: unknown) {
         if (cancelled) return
-        console.warn('Supabase fetch failed, falling back to static resume data:', err)
+        console.warn('Supabase fetch failed:', err)
         setState((prev) => ({
           ...prev,
-          status: 'fallback',
+          status: 'error',
           errorMessage: err instanceof Error ? err.message : 'Database offline',
         }))
       }

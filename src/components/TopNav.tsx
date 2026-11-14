@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { IconSearch } from './Icons'
 
 const allTabs = [
-  { label: 'index', href: '#index' },
+  { label: 'profile', href: '#index' },
   { label: 'about', href: '#about' },
-  { label: 'education', href: '#education' },
-  { label: 'certificates', href: '#certifications' },
   { label: 'journey', href: '#journey' },
   { label: 'skills', href: '#skills' },
   { label: 'projects', href: '#projects' },
+  { label: 'certificates', href: '#certifications' },
+  { label: 'education', href: '#education' },
   { label: 'beyond', href: '#beyond-code' },
   { label: 'contact', href: '#contact' },
 ] as const
@@ -25,13 +25,13 @@ export default function TopNav({ onOpenCommandPalette, showCertificates = false 
   const toggleRef = useRef<HTMLButtonElement | null>(null)
 
   const tabs = allTabs.filter((t) => showCertificates || t.href !== '#certifications')
-  const activeLabel = tabs.find((t) => t.href === `#${activeSection}`)?.label ?? 'index'
+  const activeLabel = tabs.find((t) => t.href === `#${activeSection}`)?.label ?? 'profile'
 
   useEffect(() => {
     const handleScroll = () => {
       const sections = [
-        'contact', 'beyond-code', 'projects', 'skills', 'journey',
-        'certifications', 'education', 'about', 'index',
+        'contact', 'beyond-code', 'education', 'certifications', 'projects',
+        'skills', 'journey', 'about', 'index',
       ]
       for (const id of sections) {
         const el = document.getElementById(id)

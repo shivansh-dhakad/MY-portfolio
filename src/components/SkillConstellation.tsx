@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
-  SKILLS_DATA,
   SKILL_DOMAINS,
   type SkillItem,
   type SkillDomain,
@@ -9,7 +8,7 @@ import {
 import { IconTerminal, IconClose, IconSearch } from './Icons'
 
 interface SkillConstellationProps {
-  skills?: SkillItem[]
+  skills: SkillItem[]
   projects: ProjectItem[]
   selectedSkill: string | null
   onSelectSkill: (skill: string | null) => void
@@ -34,14 +33,22 @@ interface GEdge {
   target: string
   color: string
 }
-
-// Set to true to always draw every technology name (can get crowded).
-const ALWAYS_SHOW_LABELS = false
+interface LabelPosition {
+  x: number
+  y: number
+  anchor: 'start' | 'middle' | 'end'
+}
+interface LabelBox {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
 
 const CX = 470
 const CY = 270
 const DEG = Math.PI / 180
-// Core language angles (degrees). Chosen to leave gaps where the hub-to-hub lines pass.
+// Core language angles (degrees), chosen to space skill nodes around the center.
 const CORE_ANGLES = [-143, -117, -62, -36, 14, 75, 105, 166]
 
 const DOMAIN_COLOR: Record<SkillDomain, string> = {
@@ -76,7 +83,7 @@ export default function SkillConstellation({
   selectedSkill,
   onSelectSkill,
 }: SkillConstellationProps) {
-  const allSkills = skills && skills.length > 0 ? skills : SKILLS_DATA
+  const allSkills = skills
   // Known domains first (fixed order), then any category added in the dashboard
   const domains = useMemo(() => {
     const present = new Set(allSkills.map((s) => normalizeDomain(s.domain)))
@@ -88,6 +95,7 @@ export default function SkillConstellation({
   const [activeDomain, setActiveDomain] = useState<SkillDomain | 'All'>('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [hovered, setHovered] = useState<GNode | null>(null)
+  const focusedDomain = hovered?.domain ?? activeDomain
 
   // Static layout: computed only when data changes, never on hover
   const { nodes, edges } = useMemo(() => {
@@ -115,14 +123,14 @@ export default function SkillConstellation({
           ? CORE_ANGLES[i] * DEG
           : -Math.PI / 2 + ((i + 0.5) / core.length) * Math.PI * 2
       ns.push({
-        id: s.id, name: s.name, domain: 'Languages & Core', color: s.color || coreColor,
-        x: CX + Math.cos(a) * 150, y: CY + Math.sin(a) * 84, r: s.highlight ? 16 : 13, w: 0,
+        id: s.id, name: s.name, domain: 'Languages & Core', color: coreColor,
+        x: CX + Math.cos(a) * 150, y: CY + Math.sin(a) * 84, r: 13, w: 0,
         ox: Math.cos(a), oy: Math.sin(a), isHub: false, count: skillCount(s.name),
       })
       es.push({ source: 'hub-core', target: s.id, color: coreColor })
     })
 
-    // Satellite domain hubs: a pill with the domain name, technologies on an ellipse around it
+    // Independent domain hubs with their technologies arranged around each hub
     const sats = domains.filter((d) => d !== 'Languages & Core')
     sats.forEach((d, i) => {
       const a = -Math.PI / 2 + (i / sats.length) * Math.PI * 2
@@ -136,15 +144,14 @@ export default function SkillConstellation({
         id: hubId, name: d, domain: d, color, x: hx, y: hy, r: 15, w,
         ox: 0, oy: 0, isHub: true, count: countFor(kids),
       })
-      es.push({ source: 'hub-core', target: hubId, color })
       const rx = w / 2 + 36
       const ry = 54
       kids.forEach((s, j) => {
-        // start facing outward so the line coming from the centre falls in a gap
+        // Spread technology nodes around the domain hub.
         const ka = a + (j / kids.length) * Math.PI * 2
         ns.push({
-          id: s.id, name: s.name, domain: d, color: s.color || color,
-          x: hx + Math.cos(ka) * rx, y: hy + Math.sin(ka) * ry, r: s.highlight ? 14 : 11, w: 0,
+          id: s.id, name: s.name, domain: d, color,
+          x: hx + Math.cos(ka) * rx, y: hy + Math.sin(ka) * ry, r: 11, w: 0,
           ox: Math.cos(ka), oy: Math.sin(ka), isHub: false, count: skillCount(s.name),
         })
         es.push({ source: hubId, target: s.id, color })
@@ -154,12 +161,50 @@ export default function SkillConstellation({
   }, [allSkills, projects, domains])
 
   const nodeMap = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes])
+  const labelPositions = useMemo(() => {
+    const placed: LabelBox[] = []
+    const positions = new Map<string, LabelPosition>()
+    const shifts = [
+      [0, 0], [0, -18], [0, 18], [-18, 0], [18, 0],
+      [-18, -18], [18, -18], [-18, 18], [18, 18],
+      [0, -36], [0, 36], [-36, 0], [36, 0],
+      [-36, -18], [36, -18], [-36, 18], [36, 18],
+    ]
+
+    nodes
+      .filter((n) => !n.isHub)
+      .sort((a, b) => b.name.length - a.name.length)
+      .forEach((n) => {
+        const sideways = Math.abs(n.ox) > 0.35
+        const anchor: LabelPosition['anchor'] = sideways ? (n.ox > 0 ? 'start' : 'end') : 'middle'
+        const dist = n.r + 8
+        const baseX = n.x + n.ox * dist
+        const baseY = n.y + n.oy * dist + (sideways ? 4 : n.oy < 0 ? -2 : 11)
+        const width = n.name.length * 7
+        let chosen: LabelPosition = { x: baseX, y: baseY, anchor }
+
+        for (const [dx, dy] of shifts) {
+          const candidate = { x: baseX + dx, y: baseY + dy, anchor }
+          const left = candidate.x - (anchor === 'start' ? 0 : anchor === 'end' ? width : width / 2)
+          const box = { left: left - 3, right: left + width + 3, top: candidate.y - 12, bottom: candidate.y + 4 }
+          if (!placed.some((other) => box.left < other.right && box.right > other.left && box.top < other.bottom && box.bottom > other.top)) {
+            chosen = candidate
+            placed.push(box)
+            break
+          }
+        }
+
+        positions.set(n.id, chosen)
+      })
+
+    return positions
+  }, [nodes])
   const q = searchQuery.trim().toLowerCase()
 
   const isDim = (n: GNode) => {
-    const domainOk = activeDomain === 'All' || n.domain === activeDomain
     const searchOk = !q || n.name.toLowerCase().includes(q) || n.domain.toLowerCase().includes(q)
-    return !(domainOk && searchOk)
+    if (q) return !searchOk
+    return focusedDomain !== 'All' && n.domain !== focusedDomain
   }
 
   const selectedProjects = useMemo(() => {
@@ -178,19 +223,36 @@ export default function SkillConstellation({
   }, [selectedSkill, onSelectSkill])
 
   const toggle = (n: GNode) => {
-    if (n.isHub) return
     const isSel = selectedSkill?.toLowerCase() === n.name.toLowerCase()
     onSelectSkill(isSel ? null : n.name)
   }
 
-  // Which technology names are drawn: hovered, selected, or the ones in the chosen domain / search
+  const activate = (n: GNode) => {
+    setActiveDomain(n.domain)
+    setSearchQuery('')
+    if (!n.isHub) toggle(n)
+  }
+
   const showLabel = (n: GNode) => {
     if (n.isHub) return false
-    if (hovered?.id === n.id) return true
-    if (isDim(n)) return false
-    if (ALWAYS_SHOW_LABELS) return true
-    if (selectedSkill?.toLowerCase() === n.name.toLowerCase()) return true
-    return activeDomain !== 'All' || Boolean(q)
+    if (q) return !isDim(n)
+    if (hovered) return n.domain === hovered.domain
+    return activeDomain !== 'All' && n.domain === activeDomain
+  }
+
+  if (allSkills.length === 0) {
+    return (
+      <section id="skills" className="section-block" aria-labelledby="skills-heading">
+        <div className="section-header">
+          <div className="section-tag">
+            <IconTerminal />
+            <span>CONSTELLATION // CONNECTED SKILLS</span>
+          </div>
+          <h2 id="skills-heading" className="section-title">Interactive Skill Constellation</h2>
+          <p className="section-desc">No skills are currently saved in Supabase.</p>
+        </div>
+      </section>
+    )
   }
 
   return (
@@ -204,8 +266,8 @@ export default function SkillConstellation({
           Interactive Skill Constellation
         </h2>
         <p className="section-desc">
-          Core languages sit at the centre and branch into colourful domain hubs. Hover a bubble to see
-          what it is, click it to highlight the projects that use it.
+          Hover a domain or skill to reveal its cluster. Click a hub to keep a domain focused, or click a
+          skill to highlight the projects that use it.
         </p>
       </div>
 
@@ -214,7 +276,7 @@ export default function SkillConstellation({
           <button
             type="button" role="tab" aria-selected={activeDomain === 'All'}
             className={`domain-tab ${activeDomain === 'All' ? 'active' : ''}`}
-            onClick={() => setActiveDomain('All')}
+            onClick={() => { setActiveDomain('All'); setSearchQuery('') }}
           >
             All {domains.length} Domains
           </button>
@@ -222,7 +284,7 @@ export default function SkillConstellation({
             <button
               key={domain} type="button" role="tab" aria-selected={activeDomain === domain}
               className={`domain-tab ${activeDomain === domain ? 'active' : ''}`}
-              onClick={() => setActiveDomain(domain)}
+              onClick={() => { setActiveDomain(domain); setSearchQuery('') }}
             >
               {domain}
             </button>
@@ -246,18 +308,20 @@ export default function SkillConstellation({
 
       <div className="constellation-3d-wrapper">
         <div className="constellation-3d-hint" aria-hidden="true">
-          <span>Hover for details</span>
+          <span>Hover domain for skills</span>
           <span className="dot-sep">&bull;</span>
-          <span>Click to filter projects</span>
+          <span>Click hub to pin</span>
+          <span className="dot-sep">&bull;</span>
+          <span>Click skill to filter projects</span>
           <span className="dot-sep">&bull;</span>
           <span>Esc to clear</span>
         </div>
 
         <svg
-          viewBox="-80 -24 1100 580"
+          viewBox="-80 -60 1100 616"
           className="constellation-3d-svg"
           role="group"
-          aria-label="Skill constellation connecting programming languages, machine learning and AI domains"
+          aria-label="Skill constellation grouped by programming languages, machine learning, and AI domains"
         >
           {/* 1. lines */}
           <g>
@@ -290,11 +354,11 @@ export default function SkillConstellation({
                   key={n.id}
                   transform={`translate(${n.x}, ${n.y})`}
                   className={`sk-node ${n.isHub ? 'sk-hub' : ''} ${isDim(n) ? 'dim' : ''}`}
-                  role={n.isHub ? undefined : 'button'}
-                  tabIndex={n.isHub ? undefined : 0}
-                  aria-label={n.isHub ? undefined : `${n.name}, ${n.domain}`}
-                  aria-pressed={n.isHub ? undefined : isSel}
-                  onClick={() => toggle(n)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={n.isHub ? `Focus ${n.name} domain` : `${n.name}, ${n.domain}`}
+                  aria-pressed={n.isHub ? focusedDomain === n.domain : isSel}
+                  onClick={() => activate(n)}
                   onMouseEnter={() => setHovered(n)}
                   onMouseLeave={() => setHovered((h) => (h?.id === n.id ? null : h))}
                   onFocus={() => setHovered(n)}
@@ -302,7 +366,7 @@ export default function SkillConstellation({
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      toggle(n)
+                      activate(n)
                     }
                   }}
                 >
@@ -322,6 +386,10 @@ export default function SkillConstellation({
                           {n.name}
                         </text>
                       </g>
+                      <rect
+                        className="sk-hub-focus-ring"
+                        x={-n.w / 2 - 4} y={-19} width={n.w + 8} height={38} rx={18}
+                      />
                       <rect x={-n.w / 2 - 4} y={-19} width={n.w + 8} height={38} fill="transparent" />
                     </>
                   ) : (
@@ -353,17 +421,14 @@ export default function SkillConstellation({
           <g aria-hidden="true">
             {nodes.filter(showLabel).map((n) => {
               const isHover = hovered?.id === n.id
-              const dist = n.r + 8
-              const x = n.x + n.ox * dist
-              const sideways = Math.abs(n.ox) > 0.35
-              const anchor = sideways ? (n.ox > 0 ? 'start' : 'end') : 'middle'
-              const y = n.y + n.oy * dist + (sideways ? 4 : n.oy < 0 ? -2 : 11)
+              const label = labelPositions.get(n.id)
+              if (!label) return null
               return (
                 <text
                   key={`label-${n.id}`}
                   className="sk-label"
-                  x={x} y={y} textAnchor={anchor}
-                  fill={isHover ? n.color : '#f1f5f9'}
+                  x={label.x} y={label.y} textAnchor={label.anchor}
+                  fill={n.color}
                   fontSize={isHover ? 12.5 : 11.5}
                   fontWeight={isHover ? 700 : 600}
                   stroke="#0a0a0c" strokeWidth={4} strokeLinejoin="round" paintOrder="stroke"

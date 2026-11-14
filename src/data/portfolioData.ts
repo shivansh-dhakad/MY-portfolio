@@ -5,9 +5,6 @@ export interface SkillItem {
   id: string
   name: string
   domain: SkillDomain
-  highlight?: boolean
-  description?: string
-  color: string
 }
 
 // Known domains have fixed colours; categories added in the admin dashboard are plain strings.
@@ -84,13 +81,9 @@ export interface JourneyDestination {
 export interface BeyondCodeItem {
   id: string
   title: string
-  subtitle: string
   category: string
   description: string
-  quote: string
-  tags: string[]
   placeholderType: 'audio' | 'photo'
-  linkPlaceholder?: string
 }
 
 export const PROFILE_DATA = {
@@ -239,54 +232,6 @@ export const SKILL_DOMAINS: SkillDomain[] = [
   'Deep Learning',
   'Generative AI',
   'Agentic AI & Backend',
-]
-
-// Enriched Skills with vibrant domain colors for 3D constellation
-export const SKILLS_DATA: SkillItem[] = [
-  // 1. Languages & Core (Center) - Vibrant Sky Blue
-  { id: 'prog-py', name: 'Python', domain: 'Languages & Core', highlight: true, color: '#38bdf8' },
-  { id: 'prog-cpp', name: 'C++', domain: 'Languages & Core', highlight: true, color: '#38bdf8' },
-  { id: 'prog-html', name: 'HTML', domain: 'Languages & Core', color: '#38bdf8' },
-  { id: 'prog-css', name: 'CSS', domain: 'Languages & Core', color: '#38bdf8' },
-  { id: 'prog-js', name: 'JavaScript', domain: 'Languages & Core', highlight: true, color: '#38bdf8' },
-  { id: 'prog-react', name: 'React', domain: 'Languages & Core', highlight: true, color: '#38bdf8' },
-  { id: 'prog-ts', name: 'TypeScript', domain: 'Languages & Core', color: '#38bdf8' },
-  { id: 'prog-sql', name: 'SQL', domain: 'Languages & Core', color: '#38bdf8' },
-
-  // 2. Data Analysis - Emerald Green
-  { id: 'da-pandas', name: 'Pandas', domain: 'Data Analysis', highlight: true, color: '#10b981' },
-  { id: 'da-numpy', name: 'NumPy', domain: 'Data Analysis', highlight: true, color: '#10b981' },
-  { id: 'da-matplotlib', name: 'Matplotlib', domain: 'Data Analysis', color: '#10b981' },
-  { id: 'da-seaborn', name: 'Seaborn', domain: 'Data Analysis', color: '#10b981' },
-  { id: 'da-eda', name: 'Exploratory Data Analysis', domain: 'Data Analysis', color: '#10b981' },
-
-  // 3. Machine Learning - Electric Violet
-  { id: 'ml-sklearn', name: 'Scikit-Learn', domain: 'Machine Learning', highlight: true, color: '#a855f7' },
-  { id: 'ml-xgb', name: 'XGBoost', domain: 'Machine Learning', highlight: true, color: '#a855f7' },
-  { id: 'ml-reg', name: 'Regression', domain: 'Machine Learning', color: '#a855f7' },
-  { id: 'ml-clf', name: 'Classification', domain: 'Machine Learning', color: '#a855f7' },
-  { id: 'ml-clust', name: 'Clustering', domain: 'Machine Learning', color: '#a855f7' },
-
-  // 4. Deep Learning - Warm Amber
-  { id: 'dl-pytorch', name: 'PyTorch', domain: 'Deep Learning', highlight: true, color: '#f59e0b' },
-  { id: 'dl-tf', name: 'TensorFlow', domain: 'Deep Learning', color: '#f59e0b' },
-  { id: 'dl-cnn', name: 'CNNs', domain: 'Deep Learning', highlight: true, color: '#f59e0b' },
-  { id: 'dl-cv', name: 'Computer Vision', domain: 'Deep Learning', highlight: true, color: '#f59e0b' },
-  { id: 'dl-opencv', name: 'OpenCV', domain: 'Deep Learning', color: '#f59e0b' },
-
-  // 5. Generative AI - Cyan
-  { id: 'gen-llm', name: 'Large Language Models', domain: 'Generative AI', highlight: true, color: '#06b6d4' },
-  { id: 'gen-rag', name: 'RAG', domain: 'Generative AI', highlight: true, color: '#06b6d4' },
-  { id: 'gen-langchain', name: 'LangChain', domain: 'Generative AI', color: '#06b6d4' },
-  { id: 'gen-hf', name: 'Hugging Face', domain: 'Generative AI', highlight: true, color: '#06b6d4' },
-  { id: 'gen-vector', name: 'Vector Databases', domain: 'Generative AI', color: '#06b6d4' },
-
-  // 6. Agentic AI & Backend - Radiant Rose
-  { id: 'agent-auto', name: 'Autonomous Agents', domain: 'Agentic AI & Backend', highlight: true, color: '#ec4899' },
-  { id: 'agent-tools', name: 'Tool Calling', domain: 'Agentic AI & Backend', color: '#ec4899' },
-  { id: 'web-fastapi', name: 'FastAPI', domain: 'Agentic AI & Backend', highlight: true, color: '#ec4899' },
-  { id: 'web-flask', name: 'Flask', domain: 'Agentic AI & Backend', color: '#ec4899' },
-  { id: 'web-supabase', name: 'Supabase', domain: 'Agentic AI & Backend', highlight: true, color: '#ec4899' },
 ]
 
 export const PROJECTS_DATA: ProjectItem[] = [
@@ -765,27 +710,15 @@ export const BEYOND_CODE_DATA: BeyondCodeItem[] = [
   {
     id: 'interest-flute',
     title: 'Flute Playing (Bansuri)',
-    subtitle: 'Indian Classical Music & Breath Control',
     category: 'Acoustic Arts & Discipline',
-    description:
-      'Playing the Indian bamboo flute (Bansuri) is my primary creative discipline outside of machine learning. The delicate balance of breath pressure, finger embouchure, and melodic Raag structures fosters the same focused patience and pattern sensitivity required to debug complex neural networks.',
-    quote:
-      '“In music as in algorithms, precision creates harmony; nuance transforms syntax into soul.”',
-    tags: ['Bansuri', 'Raag Bhupali', 'Breath Control', 'Improvisation', 'Meditation'],
+    description: 'Playing the Indian bamboo flute (Bansuri) is my primary creative discipline outside of machine learning.',
     placeholderType: 'audio',
-    linkPlaceholder: 'Performance recordings & Instagram audio clips coming soon',
   },
   {
     id: 'interest-bike',
     title: 'Long-Distance Bike Riding',
-    subtitle: 'Endurance, Route Exploration & Mental Clarity',
     category: 'Endurance & Exploration',
-    description:
-      'Cycling across long stretches and scenic routes around Madhya Pradesh provides an essential mental reset. Touring through varied terrain teaches pacing, resilience, and appreciation for the physical landscape beyond terminal screens.',
-    quote:
-      '“Long rides clear the cache; every hill is just an optimization gradient waiting to be climbed.”',
-    tags: ['Endurance Cycling', 'Highway Touring', 'Route Exploration', 'Outdoor Focus'],
+    description: 'Cycling across long stretches and scenic routes around Madhya Pradesh provides an essential mental reset.',
     placeholderType: 'photo',
-    linkPlaceholder: 'Ride logs & trail photography coming soon',
   },
 ]

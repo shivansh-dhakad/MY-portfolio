@@ -44,7 +44,7 @@ create table public.skill_categories (
 );
 create table public.skills (
   id uuid primary key default gen_random_uuid(),
-  category_id uuid references public.skill_categories(id) on delete set null,
+  category_id uuid references public.skill_categories(id) on delete cascade,
   name text not null unique, sort_order int default 0
 );
 create table public.projects (

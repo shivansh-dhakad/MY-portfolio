@@ -10,12 +10,13 @@ import {
   IconMusic,
   IconStar,
 } from './Icons'
-import { PROJECTS_DATA, SKILLS_DATA } from '../data/portfolioData'
+import { PROJECTS_DATA, type SkillItem } from '../data/portfolioData'
 
 interface CommandPaletteProps {
   isOpen: boolean
   onClose: () => void
   onSelectSkill: (skill: string) => void
+  skills: SkillItem[]
 }
 
 interface PaletteAction {
@@ -31,6 +32,7 @@ export default function CommandPalette({
   isOpen,
   onClose,
   onSelectSkill,
+  skills,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -132,8 +134,8 @@ export default function CommandPalette({
       })
     })
 
-    // Highlight Skills
-    SKILLS_DATA.filter((s) => s.highlight).forEach((s) => {
+    // Skills from the database
+    skills.forEach((s) => {
       list.push({
         id: `skill-${s.id}`,
         title: `Filter by ${s.name}`,
@@ -166,7 +168,7 @@ export default function CommandPalette({
     })
 
     return list
-  }, [onSelectSkill])
+  }, [onSelectSkill, skills])
 
   // Filter actions by query
   const filteredActions = useMemo(() => {

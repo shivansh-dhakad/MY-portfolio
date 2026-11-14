@@ -1,7 +1,7 @@
-export default function StateNotice({ kind }: { kind: 'loading' | 'error' }) {
+export default function StateNotice({ kind, message }: { kind: 'loading' | 'error'; message?: string }) {
   return (
     <p className={`notice notice-${kind}`} role="status">
-      {kind === 'loading' ? 'Loading the latest content…' : 'Couldn’t reach the database. Showing the saved version.'}
+      {kind === 'loading' ? 'Loading the latest content…' : message || 'Could not load the latest content from Supabase.'}
     </p>
   )
 }

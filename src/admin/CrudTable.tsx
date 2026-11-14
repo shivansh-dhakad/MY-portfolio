@@ -27,6 +27,7 @@ export interface CrudProps {
   addLabel?: string
   onChange?: () => void
   note?: string
+  deleteWarning?: string
 }
 
 function clean(fields: FieldDef[], v: Row, extraKeys: string[] = []) {
@@ -97,7 +98,8 @@ function Item({ row, p, reload }: { row: Row; p: CrudProps; reload: () => Promis
     })
 
   const remove = () => {
-    if (!window.confirm(`Delete “${p.label(v) || 'this item'}”? This cannot be undone.`)) return
+    const warning = p.deleteWarning ?? 'This cannot be undone.'
+    if (!window.confirm(`Delete “${p.label(v) || 'this item'}”? ${warning}`)) return
     void task(async () => {
       await run(client().from(p.table).delete().eq('id', row.id))
       await reload()

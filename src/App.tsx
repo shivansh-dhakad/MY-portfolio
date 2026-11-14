@@ -18,7 +18,7 @@ import { useEntries } from './lib/useEntries'
 import { useInstagram } from './lib/useInstagram'
 
 export default function App() {
-  const { profile, projects, skills, education, beyondCode, status } = usePortfolioData()
+  const { profile, projects, skills, education, beyondCode, status, errorMessage } = usePortfolioData()
   const entries = useEntries()
   const instagramUrl = useInstagram()
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
@@ -49,11 +49,12 @@ export default function App() {
         isOpen={paletteOpen}
         onClose={() => setPaletteOpen(false)}
         onSelectSkill={(skillName) => setSelectedSkill(skillName)}
+        skills={skills}
       />
 
       <main id="main">
         {status === 'loading' && <StateNotice kind="loading" />}
-        {status === 'error' && <StateNotice kind="error" />}
+        {status === 'error' && <StateNotice kind="error" message={errorMessage} />}
 
         {/* Hero: photo + intro + interactive zsh terminal */}
         <Hero profile={profile} projects={projects} />
@@ -62,8 +63,6 @@ export default function App() {
           <Reveal>
             <AboutCodeIntro />
           </Reveal>
-          <EducationSection items={education} />
-          <CertificationsSection entries={entries} />
           <LearningJourney />
 
           <SkillConstellation
@@ -81,6 +80,8 @@ export default function App() {
             />
           </Reveal>
 
+          <CertificationsSection entries={entries} />
+          <EducationSection items={education} />
           <BeyondCodeSection instagramUrl={instagramUrl} items={beyondCode} />
           <ContactSection profile={profile} instagramUrl={instagramUrl} />
         </div>
