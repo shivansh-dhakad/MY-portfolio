@@ -24,13 +24,11 @@ const splitFeat = (f: string) => {
   return i < 0 ? { title: f, desc: '' } : { title: f.slice(0, i).trim(), desc: f.slice(i + 1).trim() }
 }
 
-function TextBlock({ text }: { text: string }) {
+function MarkdownBlock({ text }: { text: string }) {
   return (
-    <>
-      {text.split(/\n{2,}/).map((para, i) => (
-        <p className="pw-p pw-para" key={i}>{para.trim()}</p>
-      ))}
-    </>
+    <div className="pw-markdown">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+    </div>
   )
 }
 
@@ -140,21 +138,21 @@ export default function ProjectEditorExpansion({ project, onClose }: Props) {
         return (
           <>
             <h3 className="pw-h"><span>#</span>The problem</h3>
-            <div className="pw-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{project.problem ?? ''}</ReactMarkdown></div>
+            <MarkdownBlock text={project.problem ?? ''} />
           </>
         )
       case 'solution.md':
         return (
           <>
             <h3 className="pw-h"><span>#</span>The solution</h3>
-            <div className="pw-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{project.solution ?? ''}</ReactMarkdown></div>
+            <MarkdownBlock text={project.solution ?? ''} />
           </>
         )
       case 'results.md':
         return (
           <>
             <h3 className="pw-h"><span>#</span>Results</h3>
-            {project.results && <TextBlock text={project.results} />}
+            {project.results && <MarkdownBlock text={project.results} />}
             {!!project.metrics?.length && (
               <div className="pw-cards">
                 {project.metrics.map((m, i) => (
@@ -169,7 +167,12 @@ export default function ProjectEditorExpansion({ project, onClose }: Props) {
           </>
         )
       case 'changelog.md':
-        return (<><h3 className="pw-h"><span>#</span>Development journey</h3><TextBlock text={project.changelog ?? ''} /></>)
+        return (
+          <>
+            <h3 className="pw-h"><span>#</span>Development journey</h3>
+            <MarkdownBlock text={project.changelog ?? ''} />
+          </>
+        )
       case 'features.md':
         return (
           <>
