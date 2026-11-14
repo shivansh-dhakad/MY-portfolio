@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { ProjectItem } from '../data/portfolioData'
 import {
   IconClose,
@@ -135,9 +137,19 @@ export default function ProjectEditorExpansion({ project, onClose }: Props) {
   const renderPane = () => {
     switch (active) {
       case 'problem.md':
-        return (<><h3 className="pw-h"><span>#</span>The problem</h3><TextBlock text={project.problem ?? ''} /></>)
+        return (
+          <>
+            <h3 className="pw-h"><span>#</span>The problem</h3>
+            <div className="pw-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{project.problem ?? ''}</ReactMarkdown></div>
+          </>
+        )
       case 'solution.md':
-        return (<><h3 className="pw-h"><span>#</span>The solution</h3><TextBlock text={project.solution ?? ''} /></>)
+        return (
+          <>
+            <h3 className="pw-h"><span>#</span>The solution</h3>
+            <div className="pw-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{project.solution ?? ''}</ReactMarkdown></div>
+          </>
+        )
       case 'results.md':
         return (
           <>
