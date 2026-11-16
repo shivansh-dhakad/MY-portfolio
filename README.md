@@ -1,6 +1,6 @@
 # Shivansh Dhakad: portfolio 
 
-React + Vite + TypeScript, Supabase for data, Vercel for hosting.
+React + Vite + TypeScript, Supabase for data, Netlify for hosting.
 
 ## Deployed portfoilo
 Check out my profile - https://portfolio-shivansh-dhakad.netlify.app/
