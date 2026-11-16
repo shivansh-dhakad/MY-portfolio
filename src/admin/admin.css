@@ -63,6 +63,32 @@ textarea.ad-input { resize: vertical; line-height: 1.5; }
 .ad-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .3rem; }
 .ad-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .6rem; background: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; font: .75rem var(--font-mono); cursor: pointer; }
 .ad-chip.on { border-color: var(--accent); color: var(--accent); }
+.ad-skill-relations { margin-top: .65rem; padding: .45rem .65rem; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.02); }
+.ad-skill-relations > summary { color: var(--text-muted); font: 600 .75rem var(--font-mono); cursor: pointer; }
+.ad-skill-relations[open] > summary { color: var(--accent); margin-bottom: .35rem; }
+.ad-skill-relations .ad-chips { max-height: 130px; overflow-y: auto; }
+.ad-skill-relations .ad-chip { font-size: .68rem; }
+.ad-domain-manager { margin: 1rem 0 1.5rem; padding: .7rem .85rem; background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius); }
+.ad-domain-manager > summary { color: var(--text-muted); font: 600 .8rem var(--font-mono); cursor: pointer; }
+.ad-domain-manager[open] > summary { color: var(--accent); margin-bottom: .6rem; }
+.ad-domain-manager .ad-section { margin-top: .5rem; }
+.ad-skill-result-count { margin: .4rem 0 .65rem; color: var(--text-dim); font: .7rem var(--font-mono); }
+.ad-skill-item { margin-bottom: .45rem; overflow: hidden; background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius); }
+.ad-skill-item.deleted { opacity: .65; }
+.ad-skill-summary { display: flex; align-items: center; gap: .5rem; padding: .45rem .6rem; }
+.ad-skill-expand { display: flex; align-items: center; gap: .65rem; flex: 1; min-width: 0; padding: .35rem; color: var(--text); background: transparent; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.ad-skill-expand:hover:not(:disabled) .ad-skill-summary-name { color: var(--accent); }
+.ad-skill-expand:disabled { cursor: default; }
+.ad-skill-chevron { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 50%; color: var(--accent); font: .8rem var(--font-mono); }
+.ad-skill-summary-name { overflow: hidden; color: #fff; font: 600 .85rem var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
+.ad-skill-summary-domains { min-width: 0; margin-left: auto; overflow: hidden; color: var(--text-dim); font: .7rem var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
+.ad-skill-link-count, .ad-skill-new { flex: 0 0 auto; padding: .15rem .4rem; border: 1px solid var(--line); border-radius: 999px; color: var(--text-dim); font: .65rem var(--font-mono); }
+.ad-skill-new { color: var(--accent); border-color: var(--accent); }
+.ad-skill-editor { padding: .75rem .9rem .9rem; border-top: 1px solid var(--line); }
+.ad-skill-editor .ad-skill-row { grid-template-columns: minmax(0, 1fr) 7rem; margin-bottom: .75rem; }
+.ad-skill-editor-label { display: block; margin-top: .2rem; color: var(--text-muted); font: 600 .75rem var(--font-mono); }
+.ad-skill-primary { display: grid; gap: .35rem; max-width: 28rem; margin: .75rem 0; }
+.ad-skill-item > .ad-hint { display: block; padding: 0 .9rem .65rem; }
 .ad-savebar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; gap: 1rem; padding: .75rem 0; background: linear-gradient(transparent, var(--ink-0) 30%); }
 .ad-savebar .ad-notice { margin: 0; }
 .ad-filebox { margin-top: .75rem; padding-top: .75rem; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: .4rem; align-items: flex-start; }
@@ -75,9 +101,13 @@ textarea.ad-input { resize: vertical; line-height: 1.5; }
 .ad-login .ad-card { width: min(100%, 24rem); display: flex; flex-direction: column; gap: .8rem; }
 @media (max-width: 800px) {
   .ad-shell { grid-template-columns: 1fr; }
-  .ad-side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; }
-  .ad-side nav { flex-direction: row; flex-wrap: wrap; }
-  .ad-brand { width: 100%; margin: 0; }
-  .ad-signout { margin-top: 0; }
+  .ad-side { position: sticky; top: 0; z-index: 20; height: auto; flex-direction: row; flex-wrap: nowrap; align-items: center; overflow: hidden; padding: .55rem; }
+  .ad-side nav { flex: 1; min-width: 0; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; }
+  .ad-brand { width: auto; flex: 0 0 auto; margin: 0; }
+  .ad-nav { flex: 0 0 auto; white-space: nowrap; }
+  .ad-view-site { display: none; }
+  .ad-signout { flex: 0 0 auto; margin-top: 0; }
   .ad-rep, .ad-rep:has(input:nth-of-type(3)), .ad-skill-row, .ad-skill-row.unassigned { grid-template-columns: 1fr; }
+  .ad-skill-summary-domains { display: none; }
+  .ad-skill-editor .ad-skill-row { grid-template-columns: 1fr; }
 }

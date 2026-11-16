@@ -154,6 +154,7 @@ export default function ProjectForm({ id }: { id?: string }) {
   const [d, setD] = useState<Draft | null>(null)
   const [skills, setSkills] = useState<Row[]>([])
   const [cats, setCats] = useState<Row[]>([])
+  const [skillLinks, setSkillLinks] = useState<Row[]>([])
   const [imported, setImported] = useState(false)
   const origCover = useRef<string | null>(null)
   const { busy, notice, task } = useTask()
@@ -161,11 +162,12 @@ export default function ProjectForm({ id }: { id?: string }) {
 
   useEffect(() => {
     void task(async () => {
-      const [sk, ct] = await Promise.all([
+      const [sk, ct, sd] = await Promise.all([
         run<Row[]>(client().from('skills').select('*').order('sort_order')),
         run<Row[]>(client().from('skill_categories').select('*').order('sort_order')),
+        run<Row[]>(client().from('skill_domains').select('*')),
       ])
-      setSkills(sk); setCats(ct)
+      setSkills(sk); setCats(ct); setSkillLinks(sd)
       if (!id) {
         const top = await run<Row[]>(client().from('projects').select('sort_order').order('sort_order', { ascending: false }).limit(1))
         setD(blank((top[0]?.sort_order ?? 0) + 1))
@@ -241,7 +243,9 @@ export default function ProjectForm({ id }: { id?: string }) {
   const area = (k: 'overview' | 'problem' | 'solution' | 'architecture' | 'results' | 'changelog_md' | 'features' | 'developed', label: string, rows: number, hint?: string) => (
     <Field label={label} hint={hint} className="wide"><textarea className={`ad-input ${k === 'architecture' ? 'ad-mono' : ''}`} rows={rows} value={d[k]} onChange={(e) => set(k, e.target.value)} /></Field>
   )
-  const uncategorised = skills.filter((s) => !cats.some((c) => c.id === s.category_id))
+  // A skill can sit in several domains; it is listed under each one (same checkbox state).
+  const inDomain = (cid: string) => skills.filter((s) => skillLinks.some((l) => l.skill_id === s.id && l.category_id === cid))
+  const uncategorised = skills.filter((s) => !skillLinks.some((l) => l.skill_id === s.id && cats.some((c) => c.id === l.category_id)))
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); void save() }}>
@@ -299,7 +303,7 @@ export default function ProjectForm({ id }: { id?: string }) {
 
       <fieldset className="ad-card"><legend>Technology badges (linked skills)</legend>
         <p className="ad-muted">These drive the badges on the card and the skill-constellation highlighting. Manage the list under Skills.</p>
-        {[...cats.map((c) => ({ id: c.id, name: c.name, list: skills.filter((s) => s.category_id === c.id) })), { id: 'none', name: 'Uncategorised', list: uncategorised }]
+        {[...cats.map((c) => ({ id: c.id, name: c.name, list: inDomain(c.id) })), { id: 'none', name: 'Uncategorised', list: uncategorised }]
           .filter((g) => g.list.length)
           .map((g) => (
             <div key={g.id} className="ad-skillgroup">

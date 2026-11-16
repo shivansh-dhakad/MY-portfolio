@@ -7,9 +7,10 @@ import { IconGitHub, IconLinkedIn } from './Icons'
 interface HeroProps {
   profile: typeof PROFILE_DATA
   projects: ProjectItem[]
+  skillDomains: string[]
 }
 
-export default function Hero({ profile, projects }: HeroProps) {
+export default function Hero({ profile, projects, skillDomains }: HeroProps) {
   const [first, ...rest] = profile.fullName.split(' ')
 
   const featured = projects.filter((p) => p.featured).length
@@ -57,7 +58,7 @@ export default function Hero({ profile, projects }: HeroProps) {
             </ul>
           )}
 
-          <HeroTerminal intro={profile.intro} />
+          <HeroTerminal intro={profile.intro} skillDomains={skillDomains} />
 
           <div className="actions">
             <a

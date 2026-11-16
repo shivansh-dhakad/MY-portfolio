@@ -50,13 +50,15 @@ export function usePortfolioData(): PortfolioState {
 
     async function fetchData() {
       try {
-        const [profileRes, socialRes, projectsRes, skillsRes, catRes, projectSkillsRes, mediaRes, eduRes, beyondRes] =
+        const [profileRes, socialRes, projectsRes, skillsRes, catRes, skillDomainsRes, skillLinksRes, projectSkillsRes, mediaRes, eduRes, beyondRes] =
           await Promise.all([
             db.from('profile').select('*').eq('id', 1).maybeSingle(),
             db.from('social_links').select('*').eq('visible', true).order('sort_order'),
             db.from('projects').select('*').eq('state', 'published').order('sort_order'),
             db.from('skills').select('*').order('sort_order'),
-            db.from('skill_categories').select('*').order('sort_order'),
+            db.from('skill_categories').select('*').order('sort_order').order('name').order('id'),
+            db.from('skill_domains').select('*'),
+            db.from('skill_links').select('*'),
             db.from('project_skills').select('*'),
             db.from('project_media').select('*').order('sort_order'),
             db.from('education').select('*').eq('visible', true).order('sort_order'),
@@ -160,15 +162,43 @@ export function usePortfolioData(): PortfolioState {
           }
         }
 
-        const skillsError = skillsRes.error ?? catRes.error
-        const liveSkills: SkillItem[] =
-          skillsError || !skillsRes.data || !catRes.data
-            ? []
-            : skillsRes.data.map((s) => ({
-                id: s.id,
-                name: s.name,
-                domain: catRes.data.find((c) => c.id === s.category_id)?.name ?? 'Uncategorized',
-              }))
+        if (skillLinksRes.error) {
+          console.warn('Skill links are unavailable. Apply supabase/migration_skill_links.sql to enable admin-managed links.', skillLinksRes.error)
+        }
+        const skillsError = skillsRes.error ?? catRes.error ?? skillDomainsRes.error
+        // Skills <-> domains is many-to-many (skill_domains). Domains keep the admin's order.
+        const liveSkills: SkillItem[] = (() => {
+          if (skillsError || !skillsRes.data || !catRes.data || !skillDomainsRes.data) return []
+          const cats = catRes.data
+          const rank = new Map<string, number>(cats.map((c, i) => [c.id as string, i]))
+          const catName = new Map<string, string>(cats.map((c) => [c.id as string, c.name as string]))
+          const skillName = new Map<string, string>(skillsRes.data.map((s) => [s.id as string, s.name as string]))
+          const bySkill = new Map<string, string[]>()
+          const relatedBySkill = new Map<string, string[]>()
+          for (const l of skillDomainsRes.data) {
+            if (!catName.has(l.category_id)) continue
+            bySkill.set(l.skill_id, [...(bySkill.get(l.skill_id) ?? []), l.category_id])
+          }
+          for (const link of skillLinksRes.data ?? []) {
+            const a = String(link.skill_a_id)
+            const b = String(link.skill_b_id)
+            if (!skillName.has(a) || !skillName.has(b)) continue
+            relatedBySkill.set(a, [...(relatedBySkill.get(a) ?? []), skillName.get(b) as string])
+            relatedBySkill.set(b, [...(relatedBySkill.get(b) ?? []), skillName.get(a) as string])
+          }
+          return skillsRes.data.map((s) => {
+            const ids = (bySkill.get(s.id) ?? []).sort((a, b) => (rank.get(a) ?? 0) - (rank.get(b) ?? 0))
+            const storedPrimary = s.primary_domain_id == null ? null : String(s.primary_domain_id)
+            const primaryId = storedPrimary && ids.includes(storedPrimary) ? storedPrimary : ids[0]
+            return {
+              id: s.id as string,
+              name: s.name as string,
+              domains: ids.length ? ids.map((id) => catName.get(id) as string) : ['Uncategorized'],
+              primaryDomain: primaryId ? catName.get(primaryId) as string : undefined,
+              relatedSkills: relatedBySkill.get(s.id as string) ?? [],
+            }
+          })
+        })()
 
         // Education: database rows (College / School). Keeps the built-in record if the query fails.
         const liveEdu: EducationItem[] =

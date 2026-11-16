@@ -37,7 +37,7 @@ function wrap(text: string, width: number) {
   return lines
 }
 
-function runCommand(cmd: string): CommandResult {
+function runCommand(cmd: string, skillDomains: string[]): CommandResult {
   switch (cmd) {
     case 'help':
       return {
@@ -86,16 +86,19 @@ function runCommand(cmd: string): CommandResult {
         ],
         target: 'projects',
       }
-    case 'skills':
+    case 'skills': {
+      const domainLines = skillDomains.length
+        ? wrap(skillDomains.join(' · '), 46).map((line) => `  ${line}`)
+        : ['  No domains assigned.']
       return {
         lines: [
-          'SKILL DOMAINS (6):',
-          '  Languages & Core · Data Analysis · Machine Learning',
-          '  Deep Learning · Generative AI · Agentic AI & Backend',
+          `SKILL DOMAINS (${skillDomains.length}):`,
+          ...domainLines,
           'Opening #skills ...',
         ],
         target: 'skills',
       }
+    }
     case 'education':
       return {
         lines: [
@@ -148,7 +151,7 @@ function runCommand(cmd: string): CommandResult {
   }
 }
 
-export default function HeroTerminal({ intro }: { intro?: string }) {
+export default function HeroTerminal({ intro, skillDomains }: { intro?: string; skillDomains: string[] }) {
   const safeIntro = intro && intro.trim().length > 0 ? intro : DEFAULT_INTRO
 
   const rows = useMemo(
@@ -242,7 +245,7 @@ export default function HeroTerminal({ intro }: { intro?: string }) {
       setHistory([])
       return
     }
-    const res = runCommand(cmd)
+    const res = runCommand(cmd, skillDomains)
     idRef.current += 1
     setHistory((p) => [...p, { id: idRef.current, command: cmd, lines: res.lines, egg: res.egg }])
     if (res.target) {

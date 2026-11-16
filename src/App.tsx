@@ -23,6 +23,8 @@ export default function App() {
   const instagramUrl = useInstagram()
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const skillDomains = [...new Set(skills.flatMap((skill) => skill.domains))]
+    .filter((domain) => domain.trim() && domain.trim().toLowerCase() !== 'uncategorized')
 
   // Global Ctrl+K / Cmd+K
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function App() {
         {status === 'error' && <StateNotice kind="error" message={errorMessage} />}
 
         {/* Hero: photo + intro + interactive zsh terminal */}
-        <Hero profile={profile} projects={projects} />
+        <Hero profile={profile} projects={projects} skillDomains={skillDomains} />
 
         <div className="container">
           <Reveal>

@@ -44,8 +44,22 @@ create table public.skill_categories (
 );
 create table public.skills (
   id uuid primary key default gen_random_uuid(),
-  category_id uuid references public.skill_categories(id) on delete cascade,
-  name text not null unique, sort_order int default 0
+  name text not null unique, sort_order int default 0,
+  primary_domain_id uuid references public.skill_categories(id) on delete set null
+);
+-- A skill can belong to several domains (many-to-many).
+create table public.skill_domains (
+  skill_id uuid not null references public.skills(id) on delete cascade,
+  category_id uuid not null references public.skill_categories(id) on delete cascade,
+  primary key (skill_id, category_id)
+);
+create index skill_domains_category_idx on public.skill_domains (category_id);
+-- Undirected skill-to-skill relationships. Store each pair once in sorted UUID order.
+create table public.skill_links (
+  skill_a_id uuid not null references public.skills(id) on delete cascade,
+  skill_b_id uuid not null references public.skills(id) on delete cascade,
+  primary key (skill_a_id, skill_b_id),
+  check (skill_a_id < skill_b_id)
 );
 create table public.projects (
   id uuid primary key default gen_random_uuid(),
@@ -87,12 +101,12 @@ create trigger profile_touch before update on public.profile for each row execut
 
 -- Row-level security: on for every table.
 do $$ declare t text; begin
-  foreach t in array array['profile','social_links','education','beyond_code_items','entries','skill_categories','skills',
+  foreach t in array array['profile','social_links','education','beyond_code_items','entries','skill_categories','skills','skill_domains','skill_links',
     'projects','project_skills','project_media','sections','messages'] loop
     execute format('alter table public.%I enable row level security', t);
   end loop;
   -- the admin can do everything
-  foreach t in array array['profile','social_links','education','beyond_code_items','entries','skill_categories','skills',
+  foreach t in array array['profile','social_links','education','beyond_code_items','entries','skill_categories','skills','skill_domains','skill_links',
     'projects','project_skills','project_media','sections','messages'] loop
     execute format('create policy "admin all" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
   end loop;
@@ -102,6 +116,8 @@ end $$;
 create policy "public read" on public.profile for select to anon, authenticated using (true);
 create policy "public read" on public.skill_categories for select to anon, authenticated using (true);
 create policy "public read" on public.skills for select to anon, authenticated using (true);
+create policy "public read" on public.skill_domains for select to anon, authenticated using (true);
+create policy "public read" on public.skill_links for select to anon, authenticated using (true);
 create policy "public read" on public.social_links for select to anon, authenticated using (visible);
 create policy "public read" on public.education for select to anon, authenticated using (visible);
 create policy "public read" on public.beyond_code_items for select to anon, authenticated using (visible);

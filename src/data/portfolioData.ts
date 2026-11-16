@@ -4,7 +4,10 @@
 export interface SkillItem {
   id: string
   name: string
-  domain: SkillDomain
+  // A skill can belong to several domains (e.g. HTML: Programming + Web Development).
+  domains: SkillDomain[]
+  primaryDomain?: SkillDomain
+  relatedSkills?: string[]
 }
 
 // Known domains have fixed colours; categories added in the admin dashboard are plain strings.

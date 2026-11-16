@@ -37,34 +37,38 @@ insert into public.skill_categories (id, name, sort_order) values
   ('11111111-1111-1111-1111-111111111106', 'Web Development and Backend', 6)
 on conflict (id) do nothing;
 
--- 5. Skills
-insert into public.skills (name, category_id, sort_order) values
-  ('Python', '11111111-1111-1111-1111-111111111101', 1),
-  ('C++', '11111111-1111-1111-1111-111111111101', 2),
-  ('Java', '11111111-1111-1111-1111-111111111101', 3),
-  ('JavaScript', '11111111-1111-1111-1111-111111111101', 4),
-  ('TypeScript', '11111111-1111-1111-1111-111111111101', 5),
-  ('SQL', '11111111-1111-1111-1111-111111111101', 6),
-  ('Pandas', '11111111-1111-1111-1111-111111111102', 7),
-  ('NumPy', '11111111-1111-1111-1111-111111111102', 8),
-  ('Matplotlib', '11111111-1111-1111-1111-111111111102', 9),
-  ('Seaborn', '11111111-1111-1111-1111-111111111102', 10),
-  ('Scikit-Learn', '11111111-1111-1111-1111-111111111103', 11),
-  ('XGBoost', '11111111-1111-1111-1111-111111111103', 12),
-  ('PyTorch', '11111111-1111-1111-1111-111111111104', 13),
-  ('TensorFlow', '11111111-1111-1111-1111-111111111104', 14),
-  ('CNNs', '11111111-1111-1111-1111-111111111104', 15),
-  ('Computer Vision', '11111111-1111-1111-1111-111111111104', 16),
-  ('OpenCV', '11111111-1111-1111-1111-111111111104', 17),
-  ('Large Language Models', '11111111-1111-1111-1111-111111111105', 18),
-  ('RAG', '11111111-1111-1111-1111-111111111105', 19),
-  ('LangChain', '11111111-1111-1111-1111-111111111105', 20),
-  ('Hugging Face', '11111111-1111-1111-1111-111111111105', 21),
-  ('React', '11111111-1111-1111-1111-111111111106', 22),
-  ('FastAPI', '11111111-1111-1111-1111-111111111106', 23),
-  ('Flask', '11111111-1111-1111-1111-111111111106', 24),
-  ('Supabase', '11111111-1111-1111-1111-111111111106', 25)
+-- 5. Skills (domains are assigned in skill_domains below; a skill may have several)
+insert into public.skills (name, sort_order) values
+  ('Python', 1), ('C++', 2), ('Java', 3), ('JavaScript', 4), ('TypeScript', 5), ('SQL', 6),
+  ('Pandas', 7), ('NumPy', 8), ('Matplotlib', 9), ('Seaborn', 10),
+  ('Scikit-Learn', 11), ('XGBoost', 12),
+  ('PyTorch', 13), ('TensorFlow', 14), ('CNNs', 15), ('Computer Vision', 16), ('OpenCV', 17),
+  ('Large Language Models', 18), ('RAG', 19), ('LangChain', 20), ('Hugging Face', 21),
+  ('React', 22), ('FastAPI', 23), ('Flask', 24), ('Supabase', 25),
+  ('HTML', 26), ('CSS', 27)
 on conflict (name) do nothing;
+
+insert into public.skill_domains (skill_id, category_id)
+select s.id, c.id
+from (values
+  ('Python', 'Programming'), ('C++', 'Programming'), ('Java', 'Programming'),
+  ('JavaScript', 'Programming'), ('TypeScript', 'Programming'), ('SQL', 'Programming'),
+  ('HTML', 'Programming'), ('CSS', 'Programming'),
+  ('Pandas', 'Data Analysis'), ('NumPy', 'Data Analysis'), ('Matplotlib', 'Data Analysis'), ('Seaborn', 'Data Analysis'),
+  ('Scikit-Learn', 'Machine Learning'), ('XGBoost', 'Machine Learning'),
+  ('PyTorch', 'Deep Learning'), ('TensorFlow', 'Deep Learning'), ('CNNs', 'Deep Learning'),
+  ('Computer Vision', 'Deep Learning'), ('OpenCV', 'Deep Learning'),
+  ('Large Language Models', 'Generative AI'), ('RAG', 'Generative AI'),
+  ('LangChain', 'Generative AI'), ('Hugging Face', 'Generative AI'),
+  ('React', 'Web Development and Backend'), ('FastAPI', 'Web Development and Backend'),
+  ('Flask', 'Web Development and Backend'), ('Supabase', 'Web Development and Backend'),
+  -- shared skills: also belong to Web Development and Backend
+  ('HTML', 'Web Development and Backend'), ('CSS', 'Web Development and Backend'),
+  ('JavaScript', 'Web Development and Backend'), ('TypeScript', 'Web Development and Backend')
+) as m(skill, domain)
+join public.skills s on s.name = m.skill
+join public.skill_categories c on c.name = m.domain
+on conflict do nothing;
 
 -- 6. Nine Confirmed Projects (5 Featured First, Set to 'published' for visitor visibility)
 insert into public.projects (id, slug, title, tagline, featured, sort_order, state, status, repo_url) values

@@ -77,7 +77,7 @@ export default function CommandPalette({
       {
         id: 'sec-skills',
         title: 'Skills // Constellation',
-        subtitle: 'Interactive 6-domain connected graph',
+        subtitle: 'Interactive connected skill graph and tree',
         category: 'Sections',
         icon: IconTerminal,
         action: () => document.getElementById('skills')?.scrollIntoView({ behavior: 'smooth' }),
@@ -139,7 +139,7 @@ export default function CommandPalette({
       list.push({
         id: `skill-${s.id}`,
         title: `Filter by ${s.name}`,
-        subtitle: `${s.domain} domain`,
+        subtitle: s.domains.join(' · '),
         category: 'Skills',
         icon: IconCode,
         action: () => {

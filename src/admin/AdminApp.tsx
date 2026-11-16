@@ -119,7 +119,7 @@ export default function AdminApp() {
             </Link>
           ))}
         </nav>
-        <a className="ad-nav" href="/" target="_blank" rel="noopener noreferrer">View site ↗</a>
+        <a className="ad-nav ad-view-site" href="/" target="_blank" rel="noopener noreferrer">View site ↗</a>
         <button className="ad-nav ad-signout" onClick={() => void supabase?.auth.signOut()}>Sign out</button>
       </aside>
       <main className="ad-main" id="admin-main">{page}</main>
