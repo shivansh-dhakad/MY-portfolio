@@ -101,7 +101,7 @@ export default function App() {
             <span className="tech-chip">Vite</span>
             <span className="tech-chip">TypeScript</span>
             <span className="tech-chip">Supabase</span>
-            <span className="tech-chip">Vercel</span>
+            <span className="tech-chip">Netlify</span>
           </div>
           <p className="footer-copyright">
             Interactive IDE Portfolio &bull; All rights reserved &bull; {new Date().getFullYear()}
